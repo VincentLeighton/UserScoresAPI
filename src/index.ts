@@ -96,7 +96,50 @@ getConnection().then((connection) => {
       });
   });
 
-  //
+  // GET /scores - get all scores
+  // app.get("/scores", (req: Request, res: Response) => {
+  //   connection
+  //     .execute("SELECT * FROM Scores")
+  //     .then(([results, fields]) => {
+  //       res.send(results);
+  //     })
+  //     .catch((err: QueryError) => {
+  //       res.status(500).send();
+  //     })
+  // });
+
+  // GET /scores/id - get all scores for a user by id
+  app.get("/scores", (req: Request, res: Response) => {
+    const paramFilter = req.query.filter;
+    const paramQuery = req.query.s
+    let queryString = ""
+    
+    switch (paramFilter) {
+      case 'UserID':
+          queryString = "SELECT * FROM Scores WHERE UserID = ? ORDER BY Score DESC;"
+        break;
+      case 'Username':
+          queryString = "SELECT * FROM Scores INNER JOIN Users ON Scores.UserID = Users.ID WHERE Username LIKE'%?%' ORDER BY Score DESC;"
+        break;
+        case 'GameName':
+          queryString = "SELECT * FROM Scores WHERE GameName = ? ORDER BY Score DESC;"
+        break;
+      default:
+        queryString = "SELECT * FROM Scores INNER JOIN Users ON Scores.UserID = Users.ID;"
+        break;
+    }
+
+    //Make sure paramFilter and paramQuery are valid
+
+    connection
+      .execute(queryString, paramQuery?[paramQuery]: [])
+      .then(([results, fields]) => {
+        res.send(results);
+      })
+      .catch((err: QueryError) => {
+        res.status(500).send();
+      })
+  });
 
   // // DELETE /user/id - delete a user by id
   // app.delete("/users/:id", (req: Request, res: Response) => {
